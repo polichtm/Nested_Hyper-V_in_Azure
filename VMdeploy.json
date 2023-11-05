@@ -48,11 +48,12 @@
     "HyperVHostNicName": "[format('{0}-NIC', variables('HyperVHostName'))]",
     "BastionNsgName": "[format('{0}-NSG', variables('BastionHostName'))]",
     "BastionHostName": "[format('{0}-bastion', variables('HyperVHostName'))]",
+    "BastionDnsName": "[concat('hvhostbastion',uniqueString(resourceGroup().id))]",
     "Bastion_PUBIPName": "[format('{0}-PIP', variables('BastionHostName'))]",
-    "HyperVHostConfigURL": "https://github.com/weeyin83/Lab-Deployment-in-Azure/blob/main/HyperVHostConfig.zip?raw=true",
+    "HyperVHostConfigURL": "https://github.com/polichtm/Nested_Hyper-V_in_Azure/blob/main/HyperVHostConfig.zip?raw=true",
     "HyperVHostInstallHyperVScriptFolder": ".",
     "HyperVHostInstallHyperVScriptFileName": "InstallHyperV.ps1",
-    "HyperVHostInstallHyperVURL": "https://raw.githubusercontent.com/weeyin83/Lab-Deployment-in-Azure/main/InstallHyperV.ps1"
+    "HyperVHostInstallHyperVURL": "https://raw.githubusercontent.com/polichtm/Nested_Hyper-V_in_Azure/main/InstallHyperV.ps1"
   },
   "resources": [
     {
@@ -304,7 +305,7 @@
       "properties": {
         "publicIPAllocationMethod": "Static",
         "dnsSettings": {
-          "domainNameLabel": "[variables('BastionHostName')]"
+          "domainNameLabel": "[variables('BastionDnsName')]"
         }
       }
     },

@@ -7,18 +7,12 @@ Microsoft Lab Environment - Azure Backup
  - 
 
 .What does this script do?  
- - Creates an Internal Switch in Hyper-V called "NatSwitch"
-    
- - Downloads an images of several servers for the lab environment
-
+ - Creates an Internal Switch in Hyper-V called "NatSwitch"  
+ - Downloads an images of several servers for the lab environmen
  - Repartitions the OS disk to 400GB in size
-
  - Add a new IP address to the Internal Network for Hyper-V attached to the NATSwitch
-
  - Creates a NAT Network on 192.168.0.0/24
-
  - Creates the Virtual Machines in Hyper-V
-
  - Issues a Start Command for the new VMs
 #>
 
@@ -52,7 +46,7 @@ Configuration Main
 		
 			SetScript =
 			{
-				$zipDownload = "https://techielassblogstorage.blob.core.windows.net/azurelab/HyperVLabVMs.zip"
+				$zipDownload = "https://labnestedhvartifacts.blob.core.windows.net/azurelab/HyperVLabVMs.zip"
 				$downloadedFile = "D:\HyperVLabVMs.zip"
 				$vmFolder = "C:\VM"
 				Resize-Partition -DiskNumber 0 -PartitionNumber 2 -Size (400GB)
@@ -66,9 +60,9 @@ Configuration Main
 					-MemoryStartupBytes 2GB `
 					-BootDevice VHD `
 					-VHDPath 'C:\VM\AD01.vhdx' `
-                    -Path 'C:\VM' `
+		                        -Path 'C:\VM' `
 					-Generation 1 `
-				    -Switch "NATSwitch"
+				        -Switch "NATSwitch"
 				Start-VM -Name AD01
 				New-VM -Name FS01 `
 					-MemoryStartupBytes 2GB `
@@ -77,15 +71,7 @@ Configuration Main
 					-Path 'C:\VM' `
 					-Generation 1 `
 					-Switch "NATSwitch"
-				New-VM -Name SQL01 `
-					-MemoryStartupBytes 8GB `
-					-BootDevice VHD `
-					-VHDPath 'C:\VM\SQL01.vhdx' `
-					-Path 'C:\VM' `
-					-Generation 1 `
-				-Switch "NATSwitch"
 				Start-VM -Name FS01
-				Start-VM -Name SQL01
 				New-VM -Name WEB01 `
 					-MemoryStartupBytes 2GB `
 					-BootDevice VHD `
@@ -94,14 +80,6 @@ Configuration Main
 					-Generation 1 `
 					-Switch "NATSwitch"
 				Start-VM -Name WEB01
-				New-VM -Name WEB02 `
-				    -MemoryStartupBytes 2GB `
-				    -BootDevice VHD `
-				    -VHDPath 'C:\VM\WEB02.vhdx' `
-				    -Path 'C:\VM' `
-				    -Generation 1 `
-				    -Switch "NATSwitch"
-				Start-VM -Name WEB02
 			}
 		}	
   	}

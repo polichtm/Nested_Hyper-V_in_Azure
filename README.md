@@ -2,11 +2,11 @@
 
 Within this repo you will find an ARM template that deploys a virtual machine within Azure and then helps you build out a small lab environment within that virtual machine that can be used to replicate an on-prem solution you can use to set up Azure Backup, Azure Site Recovery, Azure Migrate, etc. 
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fweeyin83%2FLab-Deployment-in-Azure%2Fmain%2FVMdeploy.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fpolichtm%2FNested_Hyper-V_in_Azure%2Fmain%2FVMdeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
-<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fweeyin83%2FLab-Deployment-in-Azure%2Fmain%2FVMdeploy.json" target="_blank">
+<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fpolichtm%2FNested_Hyper-V_in_Azure%2Fmain%2FVMdeploy.json" target="_blank">
     <img src="http://armviz.io/visualizebutton.png"/>
 </a>
 
@@ -40,23 +40,19 @@ _It is recommend that you change this._
 
 The ARM template will deploy a virtual machine within Azure and then install Hyper-V within that virtual machine.  It will also download some VHD files and deploy five servers onto that Hyper-V environment. 
 
-The servers are all joined to the domain **tailwindtraders.org**. The login name for the admin of the domain is **tailwindtraders\administrator** and the password is: **Password**: demo@pass123
+The servers are all joined to the domain **tailwindtraders.org**. The login name for the admin of the domain is **tailwindtraders\administrator** and the password is: **Password**: Pa55w.rd1234
 
-|  VM Name  | Operating System   | Purpose   |  Processor | Memory | Comments |
+| VM Name | Operating System | Purpose | Processor | Memory | Comments |
 |---|---|---|---|---|---|
-|  AD01 |  Windows Server 2008 R2 | Domain Controller, DHCP, DNS   |  1 | 2GB | |
-|  FS01 | Windows Server 2012 R2   | File Server   |   1 | 2GB | The file share is on the C drive, there are some sample files and folders. You can use this to lab out some Azure File shares. |
-| SQL01  | Windows Server 2016   | SQL Server  |  2 | 8GB | The SQL installation is on the C drive, not best practice, but okay for a lab and maybe identifying improvements that can be made.  The SQL Server hosts a database called HRDatabase, this is part of the work from the following website: [https://www.mssqltips.com/sqlservertip/7461/developing-a-web-application-with-aspnet-and-sql-server/](https://www.mssqltips.com/sqlservertip/7461/developing-a-web-application-with-aspnet-and-sql-server/)  |
-| WEB01  | Windows Server 2016   | Web front end server  |   1 | 2GB | IIS is installed on this server.  If you browse to the IP address of this server from any other server on the network you will get a small HR database website.  The website queries the database installed on SQL01. This is part of the work from the following website: [https://www.mssqltips.com/sqlservertip/7461/developing-a-web-application-with-aspnet-and-sql-server/](https://www.mssqltips.com/sqlservertip/7461/developing-a-web-application-with-aspnet-and-sql-server/) |
-| WEB02  | Ubuntu Server 22.04.2   | Future web front end server |   1 | 2GB | The IP address on this server should be statically set. This is domain joined and has Apache2 installed.  You can browse to the website http://192.168.0.24 from another computer on the network and view the default Apache2 page. |
+| AD01 | Windows Server 2008 R2 | Domain Controller, DHCP, DNS |  1 | 2GB | |
+| FS01 | Windows Server 2012 R2 | File Server | 1 | 2GB | The file share is on the C drive, there are some sample files and folders. You can use this to lab out some Azure File shares |
+| WEB01 | Windows Server 2016 | Web front end server | 1 | 2GB | IIS is installed on this server |
 
-FS01, SQL01, WEB01 and WEB02 were all patched at the start of March 2023.  AD01 wouldn't patch. 
+FS01 and WEB01 were all patched at the start of March 2023. Patches for AD01 are no longer available.
 
-The AD01 server is the domain controller, DHCP and DNS server.  It should give out IP addresses to the servers when imported, but if you have any issues there are details on how to set static IPs to them below. 
+The AD01 server is the domain controller, DHCP and DNS server. It should give out IP addresses to the servers when imported, but if you have any issues there are details on how to set static IPs to them below. 
 
 The FS01 server is a file server.  It has the file server role installed on it, it also has the FIle Server Resource Manager (FSRM) installed.  It's not an ideal setup as the files are all stored within the C drive but, there are files can you can use it to assess with Azure Migrate or look to set up an Azure File sync demo. 
-
-SQL01 is the database server, it has the SQL server role installed and the SQL server management tools installed. 
 
 None of the servers are activated with licenses, if you have an MSDN subscription you can get product keys to activate the servers or run them as is with a trial license. 
  
@@ -78,13 +74,6 @@ Once the servers are deployed you need to carry out the following configuration 
     - Preferred DNS: 192.168.0.2
     - Alternative DNS: 1.1.1.1
 
-- Log into SQL01 and set the server to have a static IP configuration as follows:
-    - IP Address: 192.168.0.4
-    - Subnet Mask: 255.255.255.0
-    - Default Gateway: 192.168.0.1
-    - Preferred DNS: 192.168.0.2
-    - Alternative DNS: 8.8.8.8
-    
 - Log into WEB01 and set the server to have a static IP configuration as follows:
     - IP Address: 192.168.0.5
     - Subnet Mask: 255.255.255.0
@@ -92,11 +81,6 @@ Once the servers are deployed you need to carry out the following configuration 
     - Preferred DNS: 192.168.0.2
     - Alternative DNS: 8.8.8.8
     
-- Within WEB02 run the following commands:
-    - sudo apt-get update
-    - sudo apt-get upgrade -y
-
-
 ## Lab VM Windows Updates
 
 If you are deploying this lab after March 2023 and want to update patches, you can initial this manually.  Alternatively there is a script on the file share **\\FS01\TT-Files\ITScripts\Updates.ps1** that can be ran and force patching.
@@ -117,14 +101,5 @@ Some tutorials on how to use this lab have been created:
 * [Lab deployment steps](Tutorials/lab-deployment.md)
 * [Use Azure File Shares with the lab](Tutorials/file-server.md)
 
-
 ## Credits
-Written by: Sarah Lean
-
-Find me on:
-
-* My Blog: https://www.techielass.com
-* Twitter: https://twitter.com/techielass
-* LinkedIn: http://uk.linkedin.com/in/sazlean
-* Github: https://github.com/weeyin83
-
+The orginal content written by: Sarah Lean

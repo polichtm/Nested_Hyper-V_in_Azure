@@ -27,6 +27,7 @@
         "new",
         "existing"
       ],
+      "defaultValue": "new",
       "metadata": {
         "description": "Specify whether to provision new vnet or deploy to existing vnet"
       }

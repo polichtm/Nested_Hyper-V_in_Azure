@@ -17,6 +17,9 @@ Microsoft Lab Environment
 
 #>
 
+#Install Routing
+Install-WindowsFeature -Name Routing -IncludeManagementTools
+
 Set-ExecutionPolicy Unrestricted -Force
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 Install-PackageProvider -Name NuGet -Force

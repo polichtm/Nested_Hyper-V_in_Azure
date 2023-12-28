@@ -37,6 +37,8 @@
     "OnPremVNETPrefix": "10.0.0.0/16",
     "OnPremVNETSubnet1Name": "VMHOST",
     "OnPremVNETSubnet1Prefix": "10.0.0.0/24",
+    "OnPremVNETSubnet2Name": "DNAT",
+    "OnPremVNETSubnet2Prefix": "10.2.0.0/24",
     "OnPremVNETBastionSubnetName": "AzureBastionSubnet",
     "OnPremVNETBastionSubnetPrefix": "10.0.1.0/24",
     "HyperVHostName": "hypervhost",
@@ -46,6 +48,7 @@
     "HyperVHostVmSize": "Standard_D8s_v3",
     "HyperVHost_NSG_Name": "[format('{0}-NSG', variables('HyperVHostName'))]",
     "HyperVHostNicName": "[format('{0}-NIC', variables('HyperVHostName'))]",
+    "HyperVHostNic2Name": "[format('{0}-NIC2', variables('HyperVHostName'))]",
     "BastionNsgName": "[format('{0}-NSG', variables('BastionHostName'))]",
     "BastionHostName": "[format('{0}-bastion', variables('HyperVHostName'))]",
     "BastionDnsName": "[concat('hvhostbastion',uniqueString(resourceGroup().id))]",
@@ -268,6 +271,12 @@
                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('BastionNsgName'))]"
               }
             }
+          },
+          {
+            "name": "[variables('OnPremVNETSubnet2Name')]",
+            "properties": {
+              "addressPrefix": "[variables('OnPremVNETSubnet2Prefix')]"
+            }
           }
         ]
       },
@@ -357,10 +366,37 @@
         ],
         "networkSecurityGroup": {
           "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('HyperVHost_NSG_Name'))]"
-        }
+        },
+        "enableIPForwarding": true
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('HyperVHost_NSG_Name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('OnPremVNETName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2022-07-01",
+      "name": "[variables('HyperVHostNic2Name')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "Purpose": "LabDeployment"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('OnPremVNETName'), variables('OnPremVNETSubnet2Name'))]"
+              }
+            }
+          }
+        ],
+        "enableIPForwarding": true
+      },
+      "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('OnPremVNETName'))]"
       ]
     },
@@ -396,13 +432,23 @@
         "networkProfile": {
           "networkInterfaces": [
             {
+              "properties": {
+                "primary": true
+              },
               "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('HyperVHostNicName'))]"
+            },
+            {
+              "properties": {
+                "primary": false
+              },
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('HyperVHostNic2Name'))]"
             }
           ]
         }
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkInterfaces', variables('HyperVHostNicName'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('HyperVHostNic2Name'))]",
         "[resourceId('Microsoft.Network/virtualNetworks', variables('OnPremVNETName'))]"
       ]
     },

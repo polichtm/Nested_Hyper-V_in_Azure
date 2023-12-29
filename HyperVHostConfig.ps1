@@ -56,14 +56,14 @@ Configuration Main
 				$NatSwitch = Get-NetAdapter -Name "vEthernet (NatSwitch)"
 				New-NetIPAddress -IPAddress 192.168.0.1 -PrefixLength 24 -InterfaceAlias $NatSwitch.Name
 				New-NetNat -Name NestedVMNATnetwork -InternalIPInterfaceAddressPrefix 192.168.0.0/24 -Verbose
-				New-VM -Name AD01 `
+				New-VM -Name DC01 `
 					-MemoryStartupBytes 2GB `
 					-BootDevice VHD `
 					-VHDPath 'C:\VM\AD01.vhdx' `
 		                        -Path 'C:\VM' `
 					-Generation 1 `
 				        -Switch "NATSwitch"
-				Start-VM -Name AD01
+				Start-VM -Name DC01
 				New-VM -Name FS01 `
 					-MemoryStartupBytes 2GB `
 					-BootDevice VHD `

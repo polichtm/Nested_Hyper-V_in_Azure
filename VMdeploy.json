@@ -40,8 +40,6 @@
     "OnPremVNETSubnet1Prefix": "10.0.0.0/24",
     "OnPremVNETSubnet2Name": "DNAT",
     "OnPremVNETSubnet2Prefix": "10.0.2.0/24",
-    "OnPremVNETBastionSubnetName": "AzureBastionSubnet",
-    "OnPremVNETBastionSubnetPrefix": "10.0.1.0/24",
     "HyperVHostName": "hypervhost",
     "HyperVHostImagePublisher": "MicrosoftWindowsServer",
     "HyperVHostImageOffer": "WindowsServer",
@@ -50,10 +48,8 @@
     "HyperVHost_NSG_Name": "[format('{0}-NSG', variables('HyperVHostName'))]",
     "HyperVHostNicName": "[format('{0}-NIC', variables('HyperVHostName'))]",
     "HyperVHostNic2Name": "[format('{0}-NIC2', variables('HyperVHostName'))]",
-    "BastionNsgName": "[format('{0}-NSG', variables('BastionHostName'))]",
-    "BastionHostName": "[format('{0}-bastion', variables('HyperVHostName'))]",
-    "BastionDnsName": "[concat('hvhostbastion',uniqueString(resourceGroup().id))]",
-    "Bastion_PUBIPName": "[format('{0}-PIP', variables('BastionHostName'))]",
+    "HyperVHostPipName": "[format('{0}-PIP', variables('HyperVHostName'))]",
+    "HyperVHostDnsName": "[concat(variables('HyperVHostName'),uniqueString(resourceGroup().id))]",
     "HyperVHostConfigURL": "https://github.com/polichtm/Nested_Hyper-V_in_Azure/blob/main/HyperVHostConfig.zip?raw=true",
     "HyperVHostInstallHyperVScriptFolder": ".",
     "HyperVHostInstallHyperVScriptFileName": "InstallHyperV.ps1",
@@ -71,169 +67,17 @@
       "properties": {
         "securityRules": [
           {
-            "name": "RDP_Access",
+            "name": "AllowRdpInbound",
             "properties": {
               "description": "Allow RDP",
               "protocol": "Tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "3389",
               "sourceAddressPrefix": "virtualnetwork",
-              "destinationAddressPrefix": "[variables('OnPremVNETSubnet1Prefix')]",
-              "access": "Allow",
-              "priority": 100,
-              "direction": "Inbound"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "type": "Microsoft.Network/networkSecurityGroups",
-      "apiVersion": "2022-07-01",
-      "name": "[variables('BastionNsgName')]",
-      "location": "[parameters('location')]",
-      "properties": {
-        "securityRules": [
-          {
-            "name": "AllowHttpsInBound",
-            "properties": {
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "sourceAddressPrefix": "Internet",
-              "destinationPortRange": "443",
               "destinationAddressPrefix": "*",
               "access": "Allow",
               "priority": 100,
               "direction": "Inbound"
-            }
-          },
-          {
-            "name": "AllowGatewayManagerInBound",
-            "properties": {
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "sourceAddressPrefix": "GatewayManager",
-              "destinationPortRange": "443",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 110,
-              "direction": "Inbound"
-            }
-          },
-          {
-            "name": "AllowLoadBalancerInBound",
-            "properties": {
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "sourceAddressPrefix": "AzureLoadBalancer",
-              "destinationPortRange": "443",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 120,
-              "direction": "Inbound"
-            }
-          },
-          {
-            "name": "AllowBastionHostCommunicationInBound",
-            "properties": {
-              "protocol": "*",
-              "sourcePortRange": "*",
-              "sourceAddressPrefix": "VirtualNetwork",
-              "destinationPortRanges": [
-                "8080",
-                "5701"
-              ],
-              "destinationAddressPrefix": "VirtualNetwork",
-              "access": "Allow",
-              "priority": 130,
-              "direction": "Inbound"
-            }
-          },
-          {
-            "name": "DenyAllInBound",
-            "properties": {
-              "protocol": "*",
-              "sourcePortRange": "*",
-              "sourceAddressPrefix": "*",
-              "destinationPortRange": "*",
-              "destinationAddressPrefix": "*",
-              "access": "Deny",
-              "priority": 1000,
-              "direction": "Inbound"
-            }
-          },
-          {
-            "name": "AllowSshRdpOutBound",
-            "properties": {
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "sourceAddressPrefix": "*",
-              "destinationPortRanges": [
-                "22",
-                "3389"
-              ],
-              "destinationAddressPrefix": "VirtualNetwork",
-              "access": "Allow",
-              "priority": 100,
-              "direction": "Outbound"
-            }
-          },
-          {
-            "name": "AllowAzureCloudCommunicationOutBound",
-            "properties": {
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "sourceAddressPrefix": "*",
-              "destinationPortRange": "443",
-              "destinationAddressPrefix": "AzureCloud",
-              "access": "Allow",
-              "priority": 110,
-              "direction": "Outbound"
-            }
-          },
-          {
-            "name": "AllowBastionHostCommunicationOutBound",
-            "properties": {
-              "protocol": "*",
-              "sourcePortRange": "*",
-              "sourceAddressPrefix": "VirtualNetwork",
-              "destinationPortRanges": [
-                "8080",
-                "5701"
-              ],
-              "destinationAddressPrefix": "VirtualNetwork",
-              "access": "Allow",
-              "priority": 120,
-              "direction": "Outbound"
-            }
-          },
-          {
-            "name": "AllowGetSessionInformationOutBound",
-            "properties": {
-              "protocol": "*",
-              "sourcePortRange": "*",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "Internet",
-              "destinationPortRanges": [
-                "80",
-                "443"
-              ],
-              "access": "Allow",
-              "priority": 130,
-              "direction": "Outbound"
-            }
-          },
-          {
-            "name": "DenyAllOutBound",
-            "properties": {
-              "protocol": "*",
-              "sourcePortRange": "*",
-              "destinationPortRange": "*",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
-              "access": "Deny",
-              "priority": 1000,
-              "direction": "Outbound"
             }
           }
         ]
@@ -265,15 +109,6 @@
             }
           },
           {
-            "name": "[variables('OnPremVNETBastionSubnetName')]",
-            "properties": {
-              "addressPrefix": "[variables('OnPremVNETBastionSubnetPrefix')]",
-              "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('BastionNsgName'))]"
-              }
-            }
-          },
-          {
             "name": "[variables('OnPremVNETSubnet2Name')]",
             "properties": {
               "addressPrefix": "[variables('OnPremVNETSubnet2Prefix')]"
@@ -282,29 +117,13 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('BastionNsgName'))]",
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('HyperVHost_NSG_Name'))]"
-      ]
-    },
-    {
-      "condition": "[equals(parameters('vnetNewOrExisting'), 'existing')]",
-      "type": "Microsoft.Network/virtualNetworks/subnets",
-      "apiVersion": "2022-07-01",
-      "name": "[format('{0}/{1}', variables('OnPremVNETName'), variables('OnPremVNETBastionSubnetName'))]",
-      "properties": {
-        "addressPrefix": "[variables('OnPremVNETBastionSubnetPrefix')]",
-        "networkSecurityGroup": {
-          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('BastionNsgName'))]"
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('BastionNsgName'))]"
       ]
     },
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2022-07-01",
-      "name": "[variables('Bastion_PUBIPName')]",
+      "name": "[variables('HyperVHostPipName')]",
       "sku": {
         "name": "Standard"
       },
@@ -315,35 +134,9 @@
       "properties": {
         "publicIPAllocationMethod": "Static",
         "dnsSettings": {
-          "domainNameLabel": "[variables('BastionDnsName')]"
+          "domainNameLabel": "[variables('HyperVHostDnsName')]"
         }
       }
-    },
-    {
-      "type": "Microsoft.Network/bastionHosts",
-      "apiVersion": "2022-07-01",
-      "name": "[variables('BastionHostName')]",
-      "location": "[parameters('location')]",
-      "properties": {
-        "ipConfigurations": [
-          {
-            "name": "IpConf",
-            "properties": {
-              "subnet": {
-                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('OnPremVNETName'), variables('OnPremVNETBastionSubnetName'))]"
-              },
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('Bastion_PUBIPName'))]"
-              }
-            }
-          }
-        ]
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('Bastion_PUBIPName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('OnPremVNETName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('OnPremVNETName'), variables('OnPremVNETBastionSubnetName'))]"
-      ]
     },
     {
       "type": "Microsoft.Network/networkInterfaces",
@@ -359,6 +152,10 @@
             "name": "ipconfig1",
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
+              "primary": true,
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('HyperVHostPipName'))]"
+              },
               "subnet": {
                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('OnPremVNETName'), variables('OnPremVNETSubnet1Name'))]"
               }
@@ -371,6 +168,7 @@
         "enableIPForwarding": true
       },
       "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('HyperVHostPipName'))]",
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('HyperVHost_NSG_Name'))]",
         "[resourceId('Microsoft.Network/virtualNetworks', variables('OnPremVNETName'))]"
       ]
@@ -389,6 +187,7 @@
             "name": "ipconfig1",
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
+              "primary": false,
               "subnet": {
                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('OnPremVNETName'), variables('OnPremVNETSubnet2Name'))]"
               }
@@ -398,6 +197,7 @@
         "enableIPForwarding": true
       },
       "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('OnPremVNETName'))]",
         "[resourceId('Microsoft.Network/virtualNetworks', variables('OnPremVNETName'))]"
       ]
     },

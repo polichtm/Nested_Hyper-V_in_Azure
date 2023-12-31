@@ -55,7 +55,7 @@ Configuration Main
 				[io.compression.zipfile]::ExtractToDirectory($downloadedFile, $vmFolder)
 				$NatSwitch = Get-NetAdapter -Name "vEthernet (NatSwitch)"
 				New-NetIPAddress -IPAddress 192.168.0.1 -PrefixLength 24 -InterfaceAlias $NatSwitch.Name
-				New-NetNat -Name NestedVMNATnetwork -InternalIPInterfaceAddressPrefix 192.168.0.0/24 -Verbose
+				# New-NetNat -Name NestedVMNATnetwork -InternalIPInterfaceAddressPrefix 192.168.0.0/24 -Verbose
 				New-VM -Name DC01 `
 					-MemoryStartupBytes 2GB `
 					-BootDevice VHD `
@@ -80,7 +80,6 @@ Configuration Main
 					-Generation 1 `
 					-Switch "NATSwitch"
 				Start-VM -Name WEB01
-				Get-NetNat | Remove-NetNat -Confirm:$false
 			}
 		}	
   	}

@@ -17,8 +17,41 @@ Microsoft Lab Environment
 
 #>
 
-#Install Routing
+#Install and configure Routing and NAT
 Install-WindowsFeature -Name Routing -IncludeManagementTools
+
+Install-RemoteAccess -VpnType RoutingOnly -Legacy
+
+Start-Process -FilePath "netsh" -ArgumentList "routing ip nat install" -Verb RunAs
+
+$nicIPAddress = '10.0.0.4'
+$nic = Get-NetIPAddress -IPAddress $nicIPAddress | Get-NetIPInterface
+$nicName = $nic.InterfaceAlias
+Start-Process -FilePath "netsh" -ArgumentList "routing ip nat add interface `"$nicName`" full" -Verb RunAs
+
+$nicIPAddress = '10.0.0.4'
+$destinationNetwork = '10.0.0.0'
+$subnetMask = '255.255.255.0'
+$gateway = "10.0.0.1"
+$nic = Get-NetIPAddress -IPAddress $nicIPAddress | Get-NetIPInterface
+$nicName = $nic.InterfaceAlias
+Start-Process -FilePath "netsh" -ArgumentList "routing ip add persistentroute $destinationNetwork $subnetMask `"$nicName`" $gateway" -Verb RunAs
+
+$nicIPAddress = '10.0.2.4'
+$destinationNetwork = '10.0.0.0'
+$subnetMask = '255.255.0.0'
+$gateway = "10.0.2.1"
+$nic = Get-NetIPAddress -IPAddress $nicIPAddress | Get-NetIPInterface
+$nicName = $nic.InterfaceAlias
+Start-Process -FilePath "netsh" -ArgumentList "routing ip add persistentroute $destinationNetwork $subnetMask `"$nicName`" $gateway" -Verb RunAs
+
+$nicIPAddress = '10.0.2.4'
+$destinationNetwork = '172.16.0.0'
+$subnetMask = '255.255.240.0'
+$gateway = "10.0.2.1"
+$nic = Get-NetIPAddress -IPAddress $nicIPAddress | Get-NetIPInterface
+$nicName = $nic.InterfaceAlias
+Start-Process -FilePath "netsh" -ArgumentList "routing ip add persistentroute $destinationNetwork $subnetMask `"$nicName`" $gateway" -Verb RunAs
 
 Set-ExecutionPolicy Unrestricted -Force
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12

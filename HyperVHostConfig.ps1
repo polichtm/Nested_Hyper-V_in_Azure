@@ -80,6 +80,7 @@ Configuration Main
 					-Generation 1 `
 					-Switch "NATSwitch"
 				Start-VM -Name WEB01
+				Get-NetNat | Remove-NetNat -Confirm:$false
 			}
 		}	
   	}

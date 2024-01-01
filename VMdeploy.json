@@ -40,10 +40,6 @@
     "OnPremVNETSubnet1Prefix": "10.0.0.0/24",
     "OnPremVNETSubnet2Name": "DNAT",
     "OnPremVNETSubnet2Prefix": "10.0.2.0/24",
-    "MigrateTargetVNETName": "MigrateTargetVNET",
-    "MigrateTargetVNETPrefix": "172.16.0.0/20",
-    "MigrateTargetVNETSubnet1Name": "INFRA",
-    "MigrateTargetVNETSubnet1Prefix": "172.16.0.0/24",
     "HyperVHostName": "hypervhost",
     "HyperVHostImagePublisher": "MicrosoftWindowsServer",
     "HyperVHostImageOffer": "WindowsServer",
@@ -123,31 +119,6 @@
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('HyperVHost_NSG_Name'))]"
       ]
-    },
-    {
-      "condition": "[equals(parameters('vnetNewOrExisting'), 'new')]",
-      "type": "Microsoft.Network/virtualNetworks",
-      "apiVersion": "2022-07-01",
-      "name": "[variables('MigrateTargetVNETName')]",
-      "location": "[parameters('location')]",
-      "tags": {
-        "Purpose": "LabDeployment"
-      },
-      "properties": {
-        "addressSpace": {
-          "addressPrefixes": [
-            "[variables('MigrateTargetVNETPrefix')]"
-          ]
-        },
-        "subnets": [
-          {
-            "name": "[variables('MigrateTargetVNETSubnet1Name')]",
-            "properties": {
-              "addressPrefix": "[variables('MigrateTargetVNETSubnet1Prefix')]"
-            }
-          }
-        ]
-      }
     },
     {
       "type": "Microsoft.Network/publicIPAddresses",
